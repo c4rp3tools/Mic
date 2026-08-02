@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FESTIPLAYER 2000 - Voz</title>
+    <style>
+        @font-face {
+            font-family: 'PixelLCD';
+            src: local('Courier New');
+        }
+        * {
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100%;
+            background: #3a3a3a;
+            background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', monospace;
+        }
+
+        .container {
+            width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* ===== SECCIÓN CARTEL (opcional) ===== */
+        .upload-section {
+            background: linear-gradient(180deg, #d9d5c9 0%, #b9b4a5 100%);
+            border: 2px solid #7a7568;
+            border-radius: 6px;
+            padding: 8px 10px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -2px 4px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .upload-section .upload-area {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 4px 6px;
+            border: 1px dashed #7a7568;
+            border-radius: 3px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            font-size: 9px;
+            color: #4a4638;
+            transition: 0.2s;
+        }
+        .upload-section .upload-area:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        .upload-section .upload-area img {
+            max-width: 100%;
+            max-height: 40px;
+            border-radius: 3px;
+            display: none;
+        }
+        .upload-section .upload-area img.show {
+            display: block;
+            margin: 0 auto;
+        }
+        .upload-section .btn-analyze {
+            background: linear-gradient(180deg, #eae0c2 0%, #cbbd8e 100%);
+            border: 1px solid #7a7568;
+            border-radius: 3px;
+            padding: 4px 10px;
+            font-size: 9px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            color: #2e2c26;
+            transition: 0.1s;
+            white-space: nowrap;
+        }
+        .upload-section .btn-analyze:active {
+            transform: translateY(2px);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        .upload-section .btn-analyze:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .upload-section .status-msg {
+            font-size: 8px;
+            color: #4a4638;
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+        }
+        .upload-section .status-msg.success {
+            color: #1a5a1a;
+        }
+        .upload-section .status-msg.error {
+            color: #8a2a1a;
+        }
+
+        /* ===== REPRODUCTOR (FESTIPLAYER 2000) ===== */
+        .player {
+            width: 100%;
+            background: linear-gradient(180deg, #d9d5c9 0%, #b9b4a5 100%);
+            border: 2px solid #7a7568;
+            border-radius: 6px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -2px 4px rgba(0, 0, 0, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            user-select: none;
+        }
+
+        .titlebar {
+            background: linear-gradient(180deg, #5a6b8c 0%, #2e3a52 100%);
+            color: #e8e6da;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 4px 8px;
+            border-radius: 3px 3px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #1a2030;
+            margin-bottom: 6px;
+        }
+        .titlebar .dots span {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #8a8570;
+            border: 1px solid #4a4638;
+            margin-left: 4px;
+        }
+
+        /* ===== BOTÓN MICRÓFONO ===== */
+        .mic-btn {
+            background: none;
+            border: none;
+            color: #e8e6da;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0 4px;
+            transition: 0.2s;
+            position: relative;
+        }
+        .mic-btn:hover {
+            color: #fff;
+            transform: scale(1.1);
+        }
+        .mic-btn.listening {
+            color: #ff4444;
+            animation: pulse 1s infinite;
+        }
+        .mic-btn.processing {
+            color: #ffaa44;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .screen {
+            background: #9db89c;
+            background-image: linear-gradient(180deg, #a7c0a5, #8fae8d);
+            border: 2px solid #4a5a48;
+            border-radius: 2px;
+            padding: 8px 10px;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+            margin-bottom: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .screen::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0px, rgba(0, 0, 0, 0.08) 1px, transparent 1px, transparent 2px);
+            pointer-events: none;
+        }
+
+        .track-name {
+            font-size: 13px;
+            font-weight: bold;
+            color: #14320f;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .track-artist {
+            font-size: 11px;
+            color: #23431c;
+            margin-top: 2px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            font-size: 10px;
+            color: #23431c;
+        }
+
+        .eq {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 16px;
+        }
+        .eq span {
+            width: 3px;
+            background: #1f4a1a;
+            animation: bounce 1s infinite ease-in-out;
+            opacity: 0.85;
+        }
+        .eq span:nth-child(1) {
+            animation-delay: 0s;
+            height: 40%;
+        }
+        .eq span:nth-child(2) {
+            animation-delay: 0.15s;
+            height: 80%;
+        }
+        .eq span:nth-child(3) {
+            animation-delay: 0.3s;
+            height: 55%;
+        }
+        .eq span:nth-child(4) {
+            animation-delay: 0.45s;
+            height: 90%;
+        }
+        .eq span:nth-child(5) {
+            animation-delay: 0.2s;
+            height: 30%;
+        }
+        .eq.paused span {
+            animation-play-state: paused;
+            height: 15% !important;
+        }
+
+        @keyframes bounce {
+            0%,
+            100% {
+                height: 20%;
+            }
+            50% {
+                height: 100%;
+            }
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn {
+            width: 34px;
+            height: 26px;
+            background: linear-gradient(180deg, #f0ede4 0%, #c9c4b4 100%);
+            border: 1px solid #7a7568;
+            border-radius: 3px;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 12px;
+            color: #2e2c26;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.05s;
+        }
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        .btn.play {
+            width: 50px;
+            background: linear-gradient(180deg, #eae0c2 0%, #cbbd8e 100%);
+        }
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .volume-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 4px 8px 4px;
+            font-size: 10px;
+            color: #4a4638;
+        }
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: #7a7568;
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4a4638;
+            border: 1px solid #2e2c26;
+            cursor: pointer;
+        }
+
+        .playlist {
+            background: #23241f;
+            border: 1px solid #14150f;
+            border-radius: 2px;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+            max-height: 175px;
+            overflow-y: auto;
+        }
+        .playlist::-webkit-scrollbar {
+            width: 4px;
+        }
+        .playlist::-webkit-scrollbar-thumb {
+            background: #4a6b48;
+            border-radius: 2px;
+        }
+
+        .track {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 9px;
+            font-size: 10px;
+            color: #7fd67a;
+            cursor: pointer;
+            border-bottom: 1px solid #1a1b16;
+        }
+        .track:last-child {
+            border-bottom: none;
+        }
+        .track:hover {
+            background: #33352c;
+        }
+        .track.active {
+            background: #2b4a2b;
+            color: #baffb0;
+        }
+        .track .num {
+            color: #4a6b48;
+            width: 18px;
+            flex-shrink: 0;
+            font-size: 9px;
+        }
+        .track.active .num {
+            color: #baffb0;
+        }
+        .track .info {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .track .band {
+            font-weight: bold;
+        }
+        .track .song {
+            opacity: 0.75;
+        }
+
+        .yt-wrap {
+            margin-top: 8px;
+            border: 2px solid #4a5a48;
+            border-radius: 2px;
+            overflow: hidden;
+            background: #000;
+        }
+        .yt-wrap iframe {
+            display: block;
+            width: 100%;
+            height: 152px;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 9px;
+            color: #5a5648;
+            margin-top: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .loading {
+            color: #ffaa44;
+            font-size: 0.7rem;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .loading-track {
+            color: #7fd67a;
+            font-size: 0.7rem;
+            padding: 0.3rem;
+            text-align: center;
+            opacity: 0.6;
+        }
+
+        /* Mensaje de voz */
+        .voice-msg {
+            font-size: 8px;
+            color: #23431c;
+            text-align: center;
+            padding: 2px 0;
+            min-height: 16px;
+            opacity: 0.7;
+            font-style: italic;
+        }
+    </style>
+  <link rel="manifest" href="/mic/manifest.json">
+  <link rel="apple-touch-icon" href="/mic/icon-192.png">
+  <meta name="theme-color" content="#3a3a3a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ===== SECCIÓN CARTEL (opcional) ===== -->
+        <div class="upload-section">
+            <div class="upload-area" id="dropZone">
+                <div id="uploadPlaceholder">
+                    📁 <span style="display:block;font-size:7px;">subir cartel</span>
+                </div>
+                <img id="imagePreview" alt="cartel" />
+                <input type="file" id="imageInput" accept="image/*" style="display:none;" />
+            </div>
+            <button class="btn-analyze" id="btnAnalyze" disabled>🤖 ANALIZAR</button>
+            <div class="status-msg" id="statusMsg">📋 sube un cartel</div>
+        </div>
+
+        <!-- ===== REPRODUCTOR ===== -->
+        <div class="player">
+            <div class="titlebar">
+                <span>♫ FESTIPLAYER 2000</span>
+                <span style="display:flex;align-items:center;gap:6px;">
+                    <button class="mic-btn" id="micBtn" title="Habla para buscar música">🎤</button>
+                    <span class="dots"><span></span><span></span><span></span></span>
+                </span>
+            </div>
+
+            <div class="screen">
+                <div class="track-name" id="trackName">🎤 Di algo</div>
+                <div class="track-artist" id="trackArtist">—</div>
+                <div class="voice-msg" id="voiceMsg">🎤 pulsa el micrófono y habla</div>
+                <div class="status-row">
+                    <span id="statusText">LISTO</span>
+                    <div class="eq paused" id="eq">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="prevBtn" title="Anterior">◀◀</button>
+                <button class="btn play" id="playBtn" title="Play/Pausa">▶</button>
+                <button class="btn" id="nextBtn" title="Siguiente">▶▶</button>
+            </div>
+
+            <div class="volume-row">
+                <span>VOL</span>
+                <input type="range" id="volumeSlider" min="0" max="100" value="70">
+            </div>
+
+            <div class="playlist" id="playlist">
+                <div class="loading">🎤 di "ponme música de..."</div>
+            </div>
+
+            <div class="yt-wrap">
+                <iframe id="ytFrame" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+
+            <div class="footer-note">🎤 asistente de voz · IA en acción</div>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        // CONFIGURACIÓN - CLAVES
+        // ============================================================
+        const PERPLEXITY_KEY = "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";
+        const YOUTUBE_API_KEY = "AIzaSyCPjS1PwQhr2ijIpoWwmxIxEHITuwvoF5Q";
+
+        // ============================================================
+        // ESTADO
+        // ============================================================
+        let currentTracks = [];
+        let currentIndex = -1;
+        let playing = false;
+        let isProcessing = false;
+        let imageData = null;
+        let recognition = null;
+        let isListening = false;
+
+        // ============================================================
+        // DOM REFS
+        // ============================================================
+        const playlistEl = document.getElementById('playlist');
+        const trackName = document.getElementById('trackName');
+        const trackArtist = document.getElementById('trackArtist');
+        const voiceMsg = document.getElementById('voiceMsg');
+        const statusText = document.getElementById('statusText');
+        const eq = document.getElementById('eq');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const ytFrame = document.getElementById('ytFrame');
+        const micBtn = document.getElementById('micBtn');
+
+        const dropZone = document.getElementById('dropZone');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const btnAnalyze = document.getElementById('btnAnalyze');
+        const statusMsg = document.getElementById('statusMsg');
+
+        // ============================================================
+        // FUNCIONES UI
+        // ============================================================
+        function setStatus(text, isPlayingState = false) {
+            statusText.textContent = text;
+            statusText.style.color = isPlayingState ? '#1a5a1a' : '#23431c';
+        }
+
+        function setVoiceMsg(text) {
+            voiceMsg.textContent = text;
+        }
+
+        function showStatusMsg(text, type = 'info') {
+            statusMsg.textContent = text;
+            statusMsg.className = 'status-msg';
+            if (type === 'success') statusMsg.classList.add('success');
+            if (type === 'error') statusMsg.classList.add('error');
+        }
+
+        function setLoading(isLoading) {
+            btnAnalyze.disabled = isLoading || !imageData;
+            btnAnalyze.textContent = isLoading ? '⏳...' : '🤖 ANALIZAR';
+        }
+
+        // ============================================================
+        // MANEJO DE IMAGEN (opcional, para compatibilidad)
+        // ============================================================
+        function handleImage(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imageData = e.target.result;
+                imagePreview.src = imageData;
+                imagePreview.classList.add('show');
+                uploadPlaceholder.style.display = 'none';
+                btnAnalyze.disabled = false;
+                showStatusMsg('✅ imagen cargada', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        dropZone.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) handleImage(this.files[0]);
+        });
+        dropZone.addEventListener('dragover', e => { e.preventDefault();
+            dropZone.style.background = 'rgba(255,255,255,0.4)'; });
+        dropZone.addEventListener('dragleave', e => { e.preventDefault();
+            dropZone.style.background = 'rgba(255,255,255,0.2)'; });
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.background = 'rgba(255,255,255,0.2)';
+            const files = e.dataTransfer.files;
+            if (files && files[0] && files[0].type.startsWith('image/')) {
+                handleImage(files[0]);
+                imageInput.files = files;
+            } else {
+                showStatusMsg('⚠️ sube una imagen', 'error');
+            }
+        });
+
+        btnAnalyze.addEventListener('click', async function() {
+            if (!imageData) { showStatusMsg('⚠️ sube una imagen', 'error'); return; }
+            if (isProcessing) return;
+            isProcessing = true;
+            setLoading(true);
+            showStatusMsg('🔍 analizando cartel...', 'info');
+            setStatus('ANALIZANDO...');
+            try {
+                const prompt =
+                    `Analiza este cartel de festival y extrae el nombre de TODOS los artistas que aparecen. Devuelve SOLO un JSON con esta estructura: {"artistas": ["Artista 1", "Artista 2", ...]}. Si hay más de 20, devuelve los 20 primeros.`;
+                const response = await fetch('https://api.perplexity.ai/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${PERPLEXITY_KEY}` },
+                    body: JSON.stringify({
+                        model: "sonar",
+                        messages: [{ role: "system",
+                                content: "Eres un asistente que extrae nombres de artistas de carteles de festivales. Devuelves JSON." },
+                            { role: "user", content: [{ type: "text", text: prompt }, { type: "image_url",
+                                    image_url: { url: imageData } }] }],
+                        temperature: 0.2,
+                        max_tokens: 500
+                    })
+                });
+                if (!response.ok) throw new Error(`Error ${response.status}`);
+                const data = await response.json();
+                const contenido = data.choices[0].message.content;
+                const jsonMatch = contenido.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error('No se pudo extraer JSON');
+                const parsed = JSON.parse(jsonMatch[0]);
+                const artistas = parsed.artistas || [];
+                if (artistas.length === 0) throw new Error('No se encontraron artistas');
+                showStatusMsg(`✅ ${artistas.length} artistas encontrados`, 'success');
+                setStatus('BUSCANDO CANCIONES...');
+                await buscarCancionesArtistas(artistas);
+            } catch (error) {
+                showStatusMsg(`❌ ${error.message}`, 'error');
+                setStatus('ERROR');
+            } finally {
+                isProcessing = false;
+                setLoading(false);
+            }
+        });
+
+        // ============================================================
+        // ASISTENTE DE VOZ (NUCLEO)
+        // ============================================================
+        function initVoiceAssistant() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                setVoiceMsg('❌ Tu navegador no soporta voz');
+                micBtn.style.opacity = '0.3';
+                micBtn.title = 'Voz no soportada';
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            recognition.onstart = function() {
+                isListening = true;
+                micBtn.classList.add('listening');
+                setVoiceMsg('🎤 Escuchando... habla ahora');
+                setStatus('ESCUCHANDO');
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                micBtn.classList.remove('listening');
+                if (!isProcessing) {
+                    setVoiceMsg('🎤 pulsa el micrófono y habla');
+                    setStatus('LISTO');
+                }
+            };
+
+            recognition.onresult = function(event) {
+                let final = '';
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        final += event.results[i][0].transcript;
+                    } else {
+                        interim += event.results[i][0].transcript;
+                    }
+                }
+                const text = final || interim;
+                if (text) {
+                    setVoiceMsg(`🗣️ "${text}"`);
+                    if (final) {
+                        // Procesar el comando completo
+                        procesarComandoVoz(final);
+                    }
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Error de voz:', event.error);
+                if (event.error === 'not-allowed') {
+                    setVoiceMsg('⚠️ Permiso de micrófono denegado');
+                    setStatus('ERROR');
+                } else if (event.error === 'no-speech') {
+                    setVoiceMsg('🎤 No te he oído, intenta de nuevo');
+                    setStatus('LISTO');
+                } else {
+                    setVoiceMsg(`⚠️ Error: ${event.error}`);
+                    setStatus('ERROR');
+                }
+                micBtn.classList.remove('listening');
+                isListening = false;
+            };
+        }
+
+        // ============================================================
+        // PROCESAR COMANDO DE VOZ CON IA
+        // ============================================================
+        async function procesarComandoVoz(texto) {
+            if (isProcessing) return;
+            isProcessing = true;
+            micBtn.classList.remove('listening');
+            micBtn.classList.add('processing');
+            setStatus('PROCESANDO...');
+            setVoiceMsg(`🤖 procesando: "${texto}"`);
+
+            try {
+                // Usar Perplexity para interpretar el comando
+                const prompt =
+                    `Interpreta este comando de voz para un reproductor de música: "${texto}"
+
+                IMPORTANTE: Debes devolver SOLO un JSON con esta estructura:
+                {
+                  "tipo": "artista" o "cancion",
+                  "artista": "Nombre del artista" (si es artista o canción específica),
+                  "cancion": "Nombre de la canción" (si es canción específica, sino null)
+                }
+
+                Ejemplos:
+                - "ponme música de Vetusta Morla" → {"tipo":"artista","artista":"Vetusta Morla","cancion":null}
+                - "quiero escuchar Do I Wanna Know de Arctic Monkeys" → {"tipo":"cancion","artista":"Arctic Monkeys","cancion":"Do I Wanna Know"}
+                - "pon canciones de Fillas de Cassandra" → {"tipo":"artista","artista":"Fillas de Cassandra","cancion":null}`;
+
+                const response = await fetch('https://api.perplexity.ai/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${PERPLEXITY_KEY}` },
+                    body: JSON.stringify({
+                        model: "sonar",
+                        messages: [{ role: "system",
+                                content: "Eres un asistente que interpreta comandos de voz para música. Devuelves JSON." },
+                            { role: "user", content: prompt }],
+                        temperature: 0.2,
+                        max_tokens: 300
+                    })
+                });
+
+                if (!response.ok) throw new Error(`Error ${response.status}`);
+
+                const data = await response.json();
+                const contenido = data.choices[0].message.content;
+                const jsonMatch = contenido.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error('No se pudo interpretar el comando');
+
+                const parsed = JSON.parse(jsonMatch[0]);
+                setVoiceMsg(`🎯 buscando: ${parsed.tipo === 'artista' ? 'artista' : 'canción'} "${parsed.artista || parsed.cancion}"`);
+
+                if (parsed.tipo === 'artista' && parsed.artista) {
+                    // Buscar canciones del artista
+                    await buscarCancionesArtistas([parsed.artista]);
+                } else if (parsed.tipo === 'cancion' && parsed.artista && parsed.cancion) {
+                    // Buscar canción específica
+                    await buscarCancionEspecifica(parsed.artista, parsed.cancion);
+                } else {
+                    throw new Error('No entendí lo que pediste');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                setVoiceMsg(`❌ ${error.message}`);
+                setStatus('ERROR');
+                showStatusMsg(`❌ ${error.message}`, 'error');
+            } finally {
+                isProcessing = false;
+                micBtn.classList.remove('processing');
+                if (!isListening) {
+                    setVoiceMsg('🎤 pulsa el micrófono y habla');
+                    setStatus('LISTO');
+                }
+            }
+        }
+
+        // ============================================================
+        // BUSCAR CANCIÓN ESPECÍFICA
+        // ============================================================
+        async function buscarCancionEspecifica(artista, cancion) {
+            try {
+                const query = `${artista} ${cancion}`;
+                const url =
+                    `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.items && data.items.length > 0) {
+                    const track = {
+                        band: artista,
+                        song: data.items[0].snippet.title,
+                        id: data.items[0].id.videoId
+                    };
+                    currentTracks = [track];
+                    renderPlaylist();
+                    showStatusMsg(`✅ ${artista} → ${cancion}`, 'success');
+                    setStatus('LISTO');
+                    loadAndPlay(0);
+                    setVoiceMsg(`▶️ reproduciendo ${cancion}`);
+                } else {
+                    throw new Error(`No se encontró "${cancion}" de ${artista}`);
+                }
+            } catch (error) {
+                throw new Error(`No se encontró la canción: ${error.message}`);
+            }
+        }
+
+        // ============================================================
+        // BUSCAR CANCIONES EN YOUTUBE
+        // ============================================================
+        async function buscarCancionesArtistas(artistas, maxSongs = 20) {
+            playlistEl.innerHTML = `<div class="loading">⏳ buscando ${artistas.length} artistas...</div>`;
+
+            const allTracks = [];
+            for (const artista of artistas) {
+                try {
+                    const canciones = await buscarCancionesYoutube(artista, maxSongs);
+                    if (canciones.length > 0) {
+                        allTracks.push({ band: artista, songs: canciones });
+                    }
+                } catch (e) { console.error(e); }
+            }
+
+            currentTracks = [];
+            allTracks.forEach(artistData => {
+                artistData.songs.forEach(song => {
+                    currentTracks.push({ band: artistData.band, song: song.title, id: song.id });
+                });
+            });
+
+            if (currentTracks.length === 0) {
+                playlistEl.innerHTML = `<div class="loading">❌ no se encontraron canciones</div>`;
+                showStatusMsg('❌ no se encontraron canciones', 'error');
+                setVoiceMsg('❌ no encontré canciones de ese artista');
+                return;
+            }
+
+            renderPlaylist();
+            const artistasConCanciones = allTracks.length;
+            showStatusMsg(`✅ ${artistasConCanciones} artistas, ${currentTracks.length} canciones`, 'success');
+            setStatus('LISTO');
+            setVoiceMsg(`🎵 ${currentTracks.length} canciones cargadas`);
+            if (currentTracks.length > 0) {
+                loadAndPlay(0);
+            }
+        }
+
+        async function buscarCancionesYoutube(artista, limit = 20) {
+            try {
+                const url =
+                    `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(artista)}&type=video&maxResults=${limit}&key=${YOUTUBE_API_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.error) return [];
+                if (data.items && data.items.length > 0) {
+                    return data.items.map(item => ({ id: item.id.videoId, title: item.snippet.title }));
+                }
+                return [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        // ============================================================
+        // REPRODUCTOR
+        // ============================================================
+        function ytEmbedSrc(videoId) {
+            return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&playsinline=1&rel=0&modestbranding=1`;
+        }
+
+        function postCmd(func, args) {
+            if (!ytFrame.contentWindow) return;
+            ytFrame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: func, args: args || [] }), '*');
+        }
+
+        function highlightActive(i) {
+            document.querySelectorAll('.track').forEach(el => el.classList.remove('active'));
+            const el = document.querySelector(`.track[data-index="${i}"]`);
+            if (el) el.classList.add('active');
+        }
+
+        function setPlayingUI(isPlaying) {
+            playing = isPlaying;
+            if (isPlaying) {
+                statusText.textContent = "REPRODUCIENDO";
+                eq.classList.remove('paused');
+                playBtn.textContent = "❚❚";
+            } else {
+                statusText.textContent = "PAUSA";
+                eq.classList.add('paused');
+                playBtn.textContent = "▶";
+            }
+        }
+
+        function loadAndPlay(i) {
+            if (currentTracks.length === 0) return;
+            currentIndex = (i + currentTracks.length) % currentTracks.length;
+            const t = currentTracks[currentIndex];
+            trackName.textContent = t.song;
+            trackArtist.textContent = t.band;
+            highlightActive(currentIndex);
+            statusText.textContent = "CARGANDO...";
+            eq.classList.add('paused');
+            ytFrame.src = ytEmbedSrc(t.id);
+        }
+
+        function nextTrack() {
+            if (currentTracks.length === 0) return;
+            loadAndPlay(currentIndex + 1);
+        }
+
+        function prevTrack() {
+            if (currentTracks.length === 0) return;
+            loadAndPlay(currentIndex - 1);
+        }
+
+        function renderPlaylist() {
+            if (currentTracks.length === 0) {
+                playlistEl.innerHTML = `<div class="loading">🎤 di "ponme música de..."</div>`;
+                return;
+            }
+
+            let html = '';
+            currentTracks.forEach((t, i) => {
+                html += `
+                    <div class="track" data-index="${i}">
+                        <span class="num">${String(i + 1).padStart(2, '0')}</span>
+                        <span class="info"><span class="band">${t.band}</span> — <span class="song">${t.song}</span></span>
+                    </div>
+                `;
+            });
+            playlistEl.innerHTML = html;
+            document.querySelectorAll('.track').forEach(el => {
+                el.addEventListener('click', () => {
+                    const idx = parseInt(el.dataset.index);
+                    loadAndPlay(idx);
+                });
+            });
+        }
+
+        // ============================================================
+        // EVENTOS DEL REPRODUCTOR
+        // ============================================================
+        playBtn.addEventListener('click', () => {
+            if (currentTracks.length === 0) { showStatusMsg('⚠️ no hay canciones', 'error'); return; }
+            if (currentIndex === -1) { loadAndPlay(0); return; }
+            if (playing) { postCmd('pauseVideo');
+                setPlayingUI(false); } else { postCmd('playVideo');
+                setPlayingUI(true); }
+        });
+
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        volumeSlider.addEventListener('input', () => {
+            postCmd('setVolume', [Number(volumeSlider.value)]);
+        });
+
+        window.addEventListener('message', (event) => {
+            if (typeof event.data !== 'string') return;
+            let data;
+            try { data = JSON.parse(event.data); } catch (e) { return; }
+            if (data.event === 'onStateChange') {
+                if (data.info === 0) { nextTrack(); } else if (data.info === 1) { setPlayingUI(true); } else if (data
+                    .info === 2) { setPlayingUI(false); }
+            }
+            if (data.event === 'onReady') {
+                postCmd('setVolume', [Number(volumeSlider.value)]);
+            }
+        });
+
+        // ============================================================
+        // MICRÓFONO
+        // ============================================================
+        micBtn.addEventListener('click', function() {
+            if (!recognition) {
+                initVoiceAssistant();
+                setTimeout(() => {
+                    if (recognition) {
+                        try { recognition.start(); } catch (e) {}
+                    }
+                }, 300);
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+                return;
+            }
+
+            if (isProcessing) {
+                setVoiceMsg('⏳ espera a que termine...');
+                return;
+            }
+
+            try {
+                recognition.start();
+            } catch (e) {
+                // Si ya está iniciado, lo reiniciamos
+                try { recognition.stop(); } catch (ex) {}
+                setTimeout(() => {
+                    try { recognition.start(); } catch (err) {}
+                }, 300);
+            }
+        });
+
+        // ============================================================
+        // INICIO
+        // ============================================================
+        renderPlaylist();
+        setStatus('LISTO');
+        setVoiceMsg('🎤 pulsa el micrófono y habla');
+        showStatusMsg('🎤 habla para buscar música', 'info');
+
+        // Inicializar reconocimiento en background
+        setTimeout(initVoiceAssistant, 500);
+
+        console.log('🎤 FESTIPLAYER 2000 - Asistente de voz');
+        console.log('🔑 Perplexity Key cargada');
+    </script>
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/mic/sw.js', { scope: '/mic/' })
+      .then(function(registration) {
+        console.log('✅ Service Worker registrado con scope:', registration.scope);
+      })
+      .catch(function(err) {
+        console.log('❌ Error al registrar SW:', err);
+      });
+  });
+}
+</script>
+</body>
+</html>

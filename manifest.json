@@ -1,0 +1,27 @@
+{
+  "name": "FESTIPLAYER 2000 - Voz",
+  "short_name": "FESTIPLAYER ",
+  "description": "Aplicación web progresiva",
+  "start_url": "/mic/index.html",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#3a3a3a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/mic/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/mic/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/mic/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
