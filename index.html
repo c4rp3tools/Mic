@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />    <title>FESTIPLAYER 2000 - Voz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FESTIPLAYER 2000 - Voz</title>
     <style>
         @font-face {
             font-family: 'PixelLCD';
@@ -12,29 +13,24 @@
             box-sizing: border-box;
         }
         html,
-body {
-    margin: 0;
-    padding: 0;                     /* ← cambio clave */
-    width: 100%;
-    height: 100%;                   /* ← añadido */
-    min-height: 100vh;              /* ← añadido (opcional) */
-    background: #3a3a3a;
-    background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 6px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Courier New', monospace;
-}
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100%;
+            background: #3a3a3a;
+            background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', monospace;
+        }
 
         .container {
-    width: 100%;                    /* ← antes 340px */
-    max-width: 480px;               /* ← opcional, para tablets */
-    padding: 0 16px;                /* ← añadido, margen interior */
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    box-sizing: border-box;         /* ← importante para que el padding no desborde */
-}
+            width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
         /* ===== SECCIÓN CARTEL (opcional) ===== */
         .upload-section {
